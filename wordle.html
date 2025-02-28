@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Wordle Free</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+    }
+    #game-container {
+      margin: 20px 0;
+    }
+    .row {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 5px;
+    }
+    .cell {
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      border: 2px solid #999;
+      margin: 2px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    .gray {
+      background-color: #787c7e;
+      border-color: #787c7e;
+      color: white;
+    }
+    .yellow {
+      background-color: #c9b458;
+      border-color: #c9b458;
+      color: white;
+    }
+    .green {
+      background-color: #6aaa64;
+      border-color: #6aaa64;
+      color: white;
+    }
+    #controls {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input[type="text"] {
+      padding: 5px;
+      font-size: 16px;
+      text-transform: lowercase;
+      width: 150px;
+      text-align: center;
+    }
+    button {
+      padding: 5px 10px;
+      font-size: 16px;
+      margin: 0 5px;
+    }
+    #message {
+      text-align: center;
+      font-size: 18px;
+      color: red;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Wordle Free</h1>
+  <div id="game-container"></div>
+  <div id="controls">
+    <input type="text" id="guessInput" maxlength="5" placeholder="Enter 5-letter word" />
+    <button id="guessBtn">Enter Guess</button>
+    <button id="newGameBtn">New Game</button>
+  </div>
+  <div id="message"></div>
+  
+  <script>
+    // Over 1000 five-letter words
+    const wordList = [
+"aback","abase","abate","abbey","abbot","abhor","abide","abled","abode","abort",
+"about","above","abuse","abyss","acorn","acrid","actor","acute","adage","adapt",
+"adept","admin","admit","adobe","adopt","adore","adorn","adult","affix","afire",
+"afoot","afoul","after","again","agape","agile","aging","aglow","agony","agree",
+"ahead","aisle","alarm","album","alert","algae","alias","alibi","alien","align",
+"alike","alive","allay","alley","allot","allow","alloy","aloft","alone","along",
+"aloof","alter","amass","amaze","amber","amble","amend","amiss","amity","among",
+"ample","amply","amuse","angel","anger","angle","angry","anime","ankle","annex",
+"annoy","annul","anode","antic","anvil","aorta","apart","aphid","apnea","apple",
+"apply","apron","aptly","arbor","ardor","arena","argon","argot","argue","arise",
+"armor","aroma","arose","array","arrow","arson","artsy","ascot","ashen","aside",
+"askew","aspic","assay","asset","atoll","atone","attic","audio","audit","auger",
+"augur","aunty","avail","avert","avian","avoid","await","awake","award","aware",
+"awash","awful","awoke",
+"bacon","badge","badly","bagel","baggy","baker","balmy","banal","barge","baron",
+"basal","basic","basil","basin","basis","baste","batch","bathe","baton","batty",
+"beach","beady","beech","beefy","befit","began","begin","begun","being","belch",
+"belie","belle","below","bench","beret","berry","bible","bicep","biddy","bigot",
+"biker","bilge","billy","binge","bingo","biota","biped","birth","bison","bitty",
+"black","blade","blame","bland","blank","blast","blaze","bleak","bleat","bleed",
+"blend","bless","blimp","blink","bloat","block","bloke","blond","blood","bloom",
+"bluff","blunt","blurb","blurt","blush","board","boast","bobby","boney","bongo",
+"bonus","booby","boost","booth","booty","booze","borne","bosom","bossy","botch",
+"bough","bound","bowel","boxer","brace","braid","brain","brake","brand","brash",
+"brass","brave","bravo","brawl","brawn","bread","break","breed","bribe","brick",
+"bride","brief","brine","bring","brink","briny","brisk","broad","broil","broke",
+"brown","brunt","brush","brusk","brute","budge","build","built","bulge","bulky",
+"bully","bunch","bunny","burly","burnt","burro","burst","bused","bushy","butte",
+"buyer","bylaw",
+"cabal","cabin","cable","cache","cacti","caddy","cadet","cagey","cairn","camel",
+"cameo","canal","candy","canny","canoe","canon","caput","carat","cargo","carol",
+"carry","carve","caste","catch","cater","catty","cause","cavil","cease","cedar",
+"chain","chair","chalk","champ","chant","chaos","chard","charm","chart","chase",
+"cheap","cheat","check","cheek","cheer","chess","chest","chick","chief","child",
+"chili","chill","chime","china","chirp","choir","choke","chord","chore","chose",
+"chuck","chump","chunk","cider","cigar","cinch","circa","civic","civil","clack",
+"claim","clamp","clash","clasp","class","clean","clear","cleat","cleft","clerk",
+"click","cliff","climb","cling","clink","cloak","clock","clone","close","cloth",
+"cloud","clout","clove","clown","cluck","coach","coast","cobra","cocoa","colon",
+"color","comet","comfy","comic","conch","condo","conic","copse","coral","corer",
+"corgi","curry","curse","curve","cycle",
+"daddy","daffy","daily","dairy","daisy","dance","dandy","datum","dealt","death",
+"debut","decal","decoy","decry","defer","deity","delay","delta","demon","demur",
+"denim","dense","depot","depth","derby","desex","deter","detox","deuce","devil",
+"diary","digit","dilly","dimly","diner","dingy","diode","dirge","dirty","disco",
+"ditch","ditto","dizzy","diver","dodge","dodgy","doily","dolly","donut","donor",
+"dopey","doubt","dough","dowry","draft","drama","drank","drape","drawl","drawn",
+"dream","dress","dried","drier","drift","drill","drink","droll","drone","drool",
+"droop","dross","druid","drunk","dryer","duchy","dully","dummy","dumpy","dunce",
+"dusky","dusty","dutch","duvet","dwarf","dwell",
+"eager","eagle","early","earth","easel","eaten","eater","ebony","eclat","edify",
+"eerie","egret","eight","eject","eking","elate","elbow","elder","elect","elegy",
+"elfin","elide","elite","elope","elude","email","embed","ember","emcee","empty",
+"enact","endow","enema","enemy","enjoy","ennui","ensue","enter","entry","envoy",
+"epoxy","equal","equip","erase","erect","erode","error","erupt","essay","ester",
+"ether","ethic","ethos","etude","evade","event","every","evict","evoke","exact",
+"exalt","excel","exert","exile","exist","expel","extol","extra","exult",
+"fable","facet","faint","fairy","faith","false","fancy","farce","fatal","fatty",
+"fault","fauna","favor","feast","fecal","feign","fella","felon","femur","fence",
+"fever","fewer","fiber","fibre","fifty","fight","filer","filmy","filth","final",
+"finch","first","fishy","fixed","fixer","fizzy","flack","flake","flame","flank",
+"flare","flash","flask","fleet","flesh","flick","flier","fling","flint","flirt",
+"float","flock","flood","floor","flour","flown","fluid","fluke","flume","flush",
+"flute","flyer","foamy","focal","focus","foggy","foyer","frail","frame","frank",
+"fraud","freak","freed","freer","fresh","fried","frill","frisk","fritz","frock",
+"front","frost","froth","frown","fruit","fudge","fugue","fully","fungi","funky",
+"funny","furry","fussy","fuzzy",
+"gable","gaffe","gaily","gamer","gamma","gamut","gavel","gauze","gazer","gecko",
+"geeky","geese","genie","genre","ghost","ghoul","giant","giddy","given","giver",
+"glade","gland","glare","glass","glaze","glide","globe","gloom","glory","gloss",
+"glove","glyph","gnash","gnome","godly","goody","goofy","gouge","gourd","grace",
+"grade","graft","grain","grand","grant","grape","graph","grasp","grass","grate",
+"grave","gravy","graze","great","greed","green","greet","grief","grill","grimly",
+"grind","gripe","groin","groovy","grope","gross","group","grout","grove","growl",
+"grown","gruel","gruff","grunt","guard","guess","guest","guide","guild","guilt",
+"guise","gully","gusto","gusty","gypsy",
+"habit","hairy","halve","hands","handy","happy","harpy","harry","harsh","haste",
+"hasty","hatch","haunt","haute","haven","havoc","hazel","heady","heard","heart",
+"heath","heave","heavy","hedge","hefty","heist","hello","hence","heron","hilly",
+"hinge","hippy","hitch","hoard","hobby","hoist","holly","homer","honey","honor",
+"horde","horny","horse","hotel","hotly","hound","house","hovel","hover","howdy",
+"human","humid","humor","humph","hunch","hunky","hurry","husky","hutch","hydro",
+"hyena",
+"icily","icing","ideal","idiom","idiot","idler","idyll","igloo","iliad","image",
+"imbue","impel","imply","inane","inbox","incur","index","inept","inert","infer",
+"ingot","inlay","inlet","inner","input","inter","intro","ionic","irate","irony",
+"issue","itchy",
+"jelly","jewel","jiffy","joint","joist","joker","jolly","joust","judge","juice",
+"juicy","jumbo","jumpy","junta","junto",
+"kebab","knack","knead","kneed","kneel","knelt","knife","knock","knoll","known",
+"koala",
+"label","labor","laced","laden","lager","lance","lanky","lapel","lapse","large",
+"larva","laser","latch","later","lathe","laugh","layer","leach","leafy","leaky",
+"leant","leapt","learn","lease","leash","least","leave","ledge","leech","leery",
+"legal","lemon","lemur","leper","level","lever","libel","libra","licit","liege",
+"light","liken","lilac","limbo","limit","linen","liner","lingo","lithe","liver",
+"livid","loamy","loath","lobby","local","locus","lodge","lofty","logic","login",
+"loopy","loose","lorry","lousy","loved","lover","lowly","loyal","lucid","lucky",
+"lumen","lumpy","lunar","lunch","lunge","lurid","lusty","lying","lyric",
+"macho","madam","magic","magma","maize","major","maker","mamma","mambo","mangy",
+"mania","manic","manly","maple","march","maria","marry","marsh","mason","masse",
+"massy","mauve","maxim","maybe","mayor","mealy","meant","meaty","medal","media",
+"melee","melon","mercy","merit","merry","metal","meter","midst","might","mimic",
+"mince","mindy","minim","minor","minus","mirth","miser","missy","mocha","modal",
+"model","modem","molar","moldy","money","month","moody","moral","morph","mossy",
+"motel","motif","motor","moult","mound","mount","mourn","mouse","mousy","mouth",
+"moved","mover","movie","mucky","mucus","muddy","mulch","mummy","munch","mural",
+"murky","mushy","music","musty","myrrh",
+"nadir","naive","naked","nasty","naval","navel","needy","nerdy","nervy","never",
+"newer","newly","nexus","nicer","niece","nifty","night","ninja","noble","nobly",
+"noise","noisy","nomad","noose","north","nosey","notch","novel","nudge","nurse",
+"nutty",
+"oaken","obese","obeys","occur","ocean","offer","often","olden","older","olive",
+"ombre","omega","onset","opera","opine","orbit","order","organ","other","otter",
+"ought","ounce","outdo","outer","outgo","ovary","ovate","overt","ovine","ovoid",
+"owing","owned","owner","oxide",
+"paddy","pagan","paint","paler","palsy","panel","panic","pansy","papal","paper",
+"parka","parse","party","pasta","paste","pasty","patch","patio","pause","payee",
+"penal","pence","penny","perch","peril","perky","pesky","phase","phone","piano",
+"picky","piece","piety","pilot","pinch","piney","pinto","pious","pique","pitch",
+"pithy","pivot","pixel","pixie","pizza","place","plaid","plain","plane","plank",
+"plant","plate","plaza","plead","pleat","plied","plier","pluck","plumb","plume",
+"plump","plunk","plush","poesy","point","poise","poker","polar","polka","polls",
+"polyp","poncho","pooch","pores","porch","poser","posit","pouch","pound","power",
+"prank","prawn","press","price","pride","prime","primo","print","prior","prism",
+"privy","prize","probe","prone","proud","prove","pubic","puffy","pulpy","pulse",
+"punch","pupal","pylon",
+"quack","quail","quake","quart","quash","quasi","queen","queer","quell","query",
+"quest","queue","quick","quiet","quill","quilt","quirk","quoth",
+"rabid","racer","radar","radii","radio","rainy","raise","rally","ranch","range",
+"rapid","raspy","ratio","razor","reach","react","ready","realm","rebel","recap",
+"recur","redox","reedy","refer","regal","rehab","reign","relax","relay","relic",
+"remix","repay","repel","reply","rerun","reset","resin","retro","revel","revue",
+"rhino","rhyme","rhomb","rifle","right","rigid","rigor","rinse","ripen","risen",
+"riser","rivet","roach","roast","robot","rocky","rogue","roomy","roost","rotor",
+"rouge","rough","round","rouse","route","rover","rowdy","royal","ruddy","rugby",
+"rumba","rumor","rupee","rural","rusty",
+"sadly","safer","sally","salon","salsa","salty","salve","sandy","satin","satyr",
+"sauce","sauna","savor","savvy","scald","scale","scalp","scaly","scamp","scant",
+"scape","scare","scarf","scary","scene","schwa","scion","scoff","scold","scoop",
+"scope","score","scorn","scout","scram","scrub","sebum","segue","seize","sense",
+"sepal","sepia","serum","serve","setup","seven","sever","sewer",
+"shack","shade","shady","shaft","shake","shaky","shale","shall","shalt","shame",
+"shank","shape","shard","share","shark","sharp","shave","shear","sheen","sheep",
+"sheer","sheet","sheik","shelf","shell","shift","shine","shiny","shire","shirt",
+"shoal","shock","shone","shoot","shore","short","shout","shove","shown","showy",
+"shrew","shrub","shrug","shuck","shunt","shyer",
+"simba","siren","sissy","sixth","sixty","skate","skein","sketch","skewed","skier",
+"skiff","skill","skimp","skirt","skulk","skull","skunk","slang","slash","slate",
+"slave","sleek","sleep","slept","slice","slick","slide","slime","sling","sloop",
+"sloth","slump","slung","slurp","small","smart","smear","smell","smelt","smile",
+"smirk","smith","smock","smoke","snack","snaky","snare","snarl","sneak","sneer",
+"snide","sniff","snipe","snore","snort","snowy","snuck","soapy","sober","soggy",
+"solar","solid","solve","sonar","sonic","sooth","sooty","sorry","sound","south",
+"space","spade","spank","spear","speck","speed","spell","spend","spent","sperm",
+"spice","spicy","spied","spike","spine","spiny","spite","splat","split","spoil",
+"spoke","spoof","spoon","sport","spout","spray","spree","sprig","spunk","spurn",
+"spurt","squad","squat","squib","stack","staff","stage","stain","stale","stamp",
+"stand","stank","stare","start","state","stave","stead","steak","steal","steam",
+"steed","steel","steep","steer","stern","stick","stiff","still","sting","stink",
+"stint","stock","stoop","store","stork","storm","story","stout","stove","strap",
+"straw","stray","strip","strut","stuck","study","stuff","stump","stung","stunk",
+"stunt","style","suave","sugar","sunny","super","surer","surge","sushi","swami",
+"swamp","swank","swarm","swash","sweat","sweep","sweet","swell","swift","swill",
+"swine","swing","swirl","swoon","swoop","sword","swore","sworn","swung",
+"tacky","taffy","taint","taken","taker","tally","talon","tamer","tango","taper",
+"tapir","tardy","tarot","taste","tatty","taunt","taxed","taxer","teach","teary",
+"tempt","tenet","tenor","tense","tenth","tepee","tepid","terra","terse","testy",
+"thank","theft","their","theme","there","these","theta","thick","thief","thigh",
+"thing","think","third","thong","thorn","those","three","threw","throb","throne",
+"thump","thyme","tiara","tibia","tidal","tiger","tight","tilde","timer","times",
+"tinge","tinny","tippy","titan","tithe","title","toast","today","toddy","token",
+"tonal","tonga","tonic","tooth","topee","topic","toxin","trace","track","tract",
+"trade","trail","train","trait","tramp","trash","trawl","tread","treat","trend",
+"triad","trial","tribe","trice","trick","tried","tripe","trite","troop","trope",
+"trout","truce","truck","truer","truly","trump","trunk","truss","trust","truth",
+"tulip","tulle","tumor","tunic","tutor","twang","tweak","tweed","tweet","twice",
+"twine","twirl","twist","twixt","tying",
+"ulcer","ultra","uncle","under","unify","union","unite","unity","unwed","unzip",
+"upper","upset","urban","urine","usage","usurp","usury",
+"vague","valet","valid","valor","value","valve","vapid","vapor","vault","vaunt",
+"venom","venue","verse","verso","verve","vicar","video","vigil","vigor","villa",
+"vinyl","viola","viper","viral","virus","visit","visor","vista","vital","vivid",
+"vixen","vocal","vodka","vogue","voice","voila","vomit","voter","vouch","vowel",
+"vying",
+"wacky","wager","wagon","waist","waive","waltz","waste","watch","water","waver",
+"waxen","weary","weave","wedge","weedy","weigh","weird","welch","wench","whack",
+"whale","wheat","wheel","whelp","where","which","whiff","while","whine","whiny",
+"whirl","whisk","white","whole","whoop","whose","widow","width","wield","wight",
+"willy","wimpy","wince","winch","windy","wiser","wispy","witch","witty","woken",
+"woman","women","woody","wooer","wooly","wordy","world","woozy","worry","worse",
+"worst","worth","would","wound","woven","wryly",
+"xenon","xylem",
+"yacht","yearn","yeast","yield","young","yours","youth",
+"zappy","zebra","zesty","zonal"
+    ];
+    
+    let solution = "";
+    let guesses = [];
+    const maxGuesses = 6;
+    
+    const gameContainer = document.getElementById("game-container");
+    const guessInput = document.getElementById("guessInput");
+    const guessBtn = document.getElementById("guessBtn");
+    const newGameBtn = document.getElementById("newGameBtn");
+    const messageDiv = document.getElementById("message");
+    
+    function startNewGame() {
+      guesses = [];
+      // Choose a random word from the wordList.
+      solution = wordList[Math.floor(Math.random() * wordList.length)].toLowerCase();
+      gameContainer.innerHTML = "";
+      messageDiv.textContent = "";
+      guessInput.value = "";
+      guessInput.disabled = false;
+      guessBtn.disabled = false;
+      // Uncomment the following line to log the solution (for testing)
+      // console.log("Solution:", solution);
+    }
+    
+    // Returns an array of colors for the guess:
+    // "green" for correct position, "yellow" for present elsewhere, "gray" otherwise.
+    function colorGuess(guess) {
+      const solutionArr = solution.split("");
+      const guessArr = guess.split("");
+      const colors = Array(5).fill("gray");
+      const solutionUsed = Array(5).fill(false);
+      
+      // First pass: green for correct positions.
+      for (let i = 0; i < 5; i++) {
+        if (guessArr[i] === solutionArr[i]) {
+          colors[i] = "green";
+          solutionUsed[i] = true;
+          guessArr[i] = null;
+        }
+      }
+      // Second pass: yellow for present letters.
+      for (let i = 0; i < 5; i++) {
+        if (guessArr[i] !== null) {
+          for (let j = 0; j < 5; j++) {
+            if (!solutionUsed[j] && guessArr[i] === solutionArr[j]) {
+              colors[i] = "yellow";
+              solutionUsed[j] = true;
+              break;
+            }
+          }
+        }
+      }
+      return colors;
+    }
+    
+    function addGuess(guess) {
+      const row = document.createElement("div");
+      row.className = "row";
+      const colors = colorGuess(guess);
+      for (let i = 0; i < 5; i++) {
+        const cell = document.createElement("div");
+        cell.className = "cell " + colors[i];
+        cell.textContent = guess[i].toUpperCase();
+        row.appendChild(cell);
+      }
+      gameContainer.appendChild(row);
+    }
+    
+    function handleGuess() {
+      messageDiv.textContent = "";
+      const guess = guessInput.value.toLowerCase().trim();
+      if (guess.length !== 5) {
+        messageDiv.textContent = "Please enter a 5-letter word.";
+        return;
+      }
+      if (!/^[a-zA-Z]{5}$/.test(guess)) {
+        messageDiv.textContent = "Only alphabetic characters are allowed.";
+        return;
+      }
+      guesses.push(guess);
+      addGuess(guess);
+      if (guess === solution) {
+        messageDiv.textContent = "Congratulations! You guessed the word!";
+        guessInput.disabled = true;
+        guessBtn.disabled = true;
+      } else if (guesses.length >= maxGuesses) {
+        messageDiv.textContent = "Game Over! The word was: " + solution.toUpperCase();
+        guessInput.disabled = true;
+        guessBtn.disabled = true;
+      }
+      guessInput.value = "";
+      guessInput.focus();
+    }
+    
+    guessBtn.addEventListener("click", handleGuess);
+    guessInput.addEventListener("keyup", function(e) {
+      if (e.key === "Enter") {
+        handleGuess();
+      }
+    });
+    newGameBtn.addEventListener("click", startNewGame);
+    
+    // Start the game on page load.
+    startNewGame();
+  </script>
+</body>
+</html>
+

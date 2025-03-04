@@ -2,19 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Wordle Free</title>
+  <title>Wordle Clone with Keyboard</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
-      max-width: 600px;
+      max-width: 800px;
       margin: auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
     }
     h1 {
+      width: 100%;
       text-align: center;
     }
     #game-container {
-      margin: 20px 0;
+      margin: 20px;
     }
     .row {
       display: flex;
@@ -49,6 +53,7 @@
     }
     #controls {
       text-align: center;
+      width: 100%;
       margin-bottom: 20px;
     }
     input[type="text"] {
@@ -68,12 +73,35 @@
       font-size: 18px;
       color: red;
       margin-top: 10px;
+      width: 100%;
+    }
+    /* Keyboard styles */
+    #keyboard-container {
+      margin: 20px;
+    }
+    .keyboard-row {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 5px;
+    }
+    .key {
+      width: 40px;
+      height: 40px;
+      margin: 2px;
+      border: 2px solid #999;
+      border-radius: 4px;
+      text-align: center;
+      line-height: 40px;
+      font-weight: bold;
+      text-transform: uppercase;
+      user-select: none;
     }
   </style>
 </head>
 <body>
-  <h1>Wordle Free</h1>
+  <h1>Wordle Clone</h1>
   <div id="game-container"></div>
+  <div id="keyboard-container"></div>
   <div id="controls">
     <input type="text" id="guessInput" maxlength="5" placeholder="Enter 5-letter word" />
     <button id="guessBtn">Enter Guess</button>
@@ -82,7 +110,8 @@
   <div id="message"></div>
   
   <script>
-    // Over 1000 five-letter words
+    // Over 1000 five-letter words (for brevity, only a subset is shown here, but you can expand this array)
+
     const wordList = [
 "aback","abase","abate","abbey","abbot","abhor","abide","abled","abode","abort",
 "about","above","abuse","abyss","acorn","acrid","actor","acute","adage","adapt",
@@ -280,7 +309,7 @@
 "yacht","yearn","yeast","yield","young","yours","youth",
 "zappy","zebra","zesty","zonal"
     ];
-    
+   
     let solution = "";
     let guesses = [];
     const maxGuesses = 6;
@@ -290,17 +319,68 @@
     const guessBtn = document.getElementById("guessBtn");
     const newGameBtn = document.getElementById("newGameBtn");
     const messageDiv = document.getElementById("message");
+    const keyboardContainer = document.getElementById("keyboard-container");
+    
+    // Define keyboard layout (QWERTY style)
+    const keyboardLayout = [
+      ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
+      ["a", "s", "d", "f", "g", "h", "j", "k", "l"],
+      ["z", "x", "c", "v", "b", "n", "m"]
+    ];
+    
+    // Map to hold current letter state for the keyboard (values: "gray", "yellow", "green")
+    let letterStates = {};
+    const statePriority = { "gray": 1, "yellow": 2, "green": 3 };
+    
+    // Create keyboard DOM elements.
+    function createKeyboard() {
+      keyboardContainer.innerHTML = ""; // Clear previous
+      for (let row of keyboardLayout) {
+        const rowDiv = document.createElement("div");
+        rowDiv.className = "keyboard-row";
+        for (let letter of row) {
+          const keyDiv = document.createElement("div");
+          keyDiv.className = "key";
+          keyDiv.id = "key_" + letter.toUpperCase();
+          keyDiv.textContent = letter.toUpperCase();
+          rowDiv.appendChild(keyDiv);
+          // Initialize letter state to empty.
+          letterStates[letter.toUpperCase()] = "";
+        }
+        keyboardContainer.appendChild(rowDiv);
+      }
+    }
+    
+    // Update the keyboard keys based on letterStates.
+    function updateKeyboard() {
+      for (let letter in letterStates) {
+        const keyEl = document.getElementById("key_" + letter);
+        keyEl.className = "key"; // reset classes
+        const state = letterStates[letter];
+        if (state) {
+          keyEl.classList.add(state);
+        }
+      }
+    }
+    
+    function resetKeyboard() {
+      // Reset letterStates and recreate keyboard.
+      for (let letter in letterStates) {
+        letterStates[letter] = "";
+      }
+      createKeyboard();
+    }
     
     function startNewGame() {
       guesses = [];
-      // Choose a random word from the wordList.
       solution = wordList[Math.floor(Math.random() * wordList.length)].toLowerCase();
       gameContainer.innerHTML = "";
       messageDiv.textContent = "";
       guessInput.value = "";
       guessInput.disabled = false;
       guessBtn.disabled = false;
-      // Uncomment the following line to log the solution (for testing)
+      resetKeyboard();
+      // Uncomment to log the solution for testing:
       // console.log("Solution:", solution);
     }
     
@@ -339,6 +419,19 @@
       const row = document.createElement("div");
       row.className = "row";
       const colors = colorGuess(guess);
+      
+      // Update keyboard letter states based on this guess.
+      for (let i = 0; i < 5; i++) {
+        const letter = guess[i].toUpperCase();
+        const newState = colors[i];
+        const currentState = letterStates[letter] || "";
+        if (!currentState || statePriority[newState] > statePriority[currentState]) {
+          letterStates[letter] = newState;
+        }
+      }
+      updateKeyboard();
+      
+      // Display the guess row.
       for (let i = 0; i < 5; i++) {
         const cell = document.createElement("div");
         cell.className = "cell " + colors[i];
@@ -382,7 +475,8 @@
     });
     newGameBtn.addEventListener("click", startNewGame);
     
-    // Start the game on page load.
+    // Initialize the game and keyboard when the page loads.
+    createKeyboard();
     startNewGame();
   </script>
 </body>
